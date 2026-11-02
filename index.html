@@ -22,6 +22,7 @@
   "pricePerShareUSDT": "1.2",
   "tokensPerShare": 10000,
   "totalShares": 10000,
+  "burnedShares": 5800,
   "maxPerWallet": 10,
   "gate": "SPACE ID Agent ID registry 0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F balanceOf(buyer) > 0",
   "buyMethod": "approve USDT to sale, then sale.buy(uint256 shares)"
@@ -161,8 +162,9 @@ font-family:var(--mono);
 <div class="bar"><div id="barFill"></div></div>
 <div class="pct" id="barPct">加载中…</div>
 <div class="row"><span class="k">已售份数</span><span class="v" id="soldShares">—</span></div>
+<div class="row"><span class="k">已销毁份数</span><span class="v" id="burnedShares">—</span></div>
+<div class="row"><span class="k">剩余可售</span><span class="v" id="leftShares">—</span></div>
 <div class="row"><span class="k">总量</span><span class="v" id="totalShares">—</span></div>
-<div class="row"><span class="k">剩余份数</span><span class="v" id="leftShares">—</span></div>
 <div class="row"><span class="k">单价</span><span class="v">1.2 USDT / 份</span></div>
 <div class="row"><span class="k">每份可得</span><span class="v">10,000 BNAQ</span></div>
 <div class="row"><span class="k">每地址限购</span><span class="v">10 份</span></div>
@@ -176,6 +178,7 @@ font-family:var(--mono);
 <li><span class="ok">✓</span><div>币安官方代币安全审计：LOW（2 级）<span class="sub">零恶意机制命中；买卖税 0；仅提示「新创建代币」与 BscScan 侧未同步验证标记</span></div></li>
 <li><span class="ok">✓</span><div>代币合约没有管理员权限<span class="sub">固定总量 1 亿，无增发、无税、无黑名单/冻结、无 owner、无代理升级</span></div></li>
 <li><span class="ok">✓</span><div>付款即时发币<span class="sub">buy 成功后 BNAQ 直接转入你的地址，不经过人工发放</span></div></li>
+<li><span class="ok">✓</span><div>总量已销毁 58%<span class="sub">2026-11-02 项目方将 58,000,000 BNAQ（5,800 份等额）转入销毁地址永久销毁，可售上限降为 4,200 份，实时剩余见上方进度：<a href="https://bscscan.com/token/0x1ad6b1d49bf83d2660a528b124bb61634592dd7c?a=0x000000000000000000000000000000000000dead" target="_blank" rel="noopener">在 BscScan 查销毁地址余额</a></span></div></li>
 </ul>
 <div class="notice amber">需要提前知道的一点：打新合约由项目方地址管理，项目方可以提取已收到的 USDT、开关销售状态——权限都写在已验证的源码里。介意这一点的，请不要参与。销售款的每一次提取在链上都有记录可查。</div>
 </div>
@@ -263,6 +266,7 @@ font-family:var(--mono);
 1) 先对打新合约授权 USDT：USDT.approve(打新合约, 份数 × 1.2 × 1e18)
 2) 再调用打新合约：buy(uint256 shares)，shares 为要购买的份数（1–10，含已购累计不超过 10）
 3) 交易成功后 BNAQ 即时转入调用地址。
+注：项目方已于 2026-11-02 销毁 58,000,000 BNAQ（打新合约 withdrawToken 转入销毁地址 0x000000000000000000000000000000000000dEaD，tx 0x08289b6d2eee4491ea76b725b7167d9a60efee389181f7959e4ef22f310ad936），可售上限为 4,200 份；实际剩余份数 = 打新合约的 BNAQ 余额 / 10,000。
 可先用 soldShares() / totalShares() 查看进度，用 sharesOf(address) 查看某地址已购份数。</pre>
 </div>
 
@@ -281,6 +285,7 @@ const CONFIG = {
 token: "0x1ad6b1d49bf83d2660a528b124bb61634592dd7c",
 sale: "0xaecdf0a06eccc7997c4f8114abaf7142f6c30f0c",
 usdt: "0x55d398326f99059fF775485246999027B3197955",
+dead: "0x000000000000000000000000000000000000dead",
 chainId: 56,
 rpcs: [
 "https://bsc-dataseed.binance.org",
@@ -383,14 +388,22 @@ let sel = 1;
 /* ============ 只读进度 ============ */
 async function loadProgress() {
 try {
-const [sold, total] = await Promise.all([getSoldShares(), getTotalShares()]);
+const [sold, total, inv, burnedTok] = await Promise.all([
+getSoldShares(), getTotalShares(),
+getBalance(CONFIG.token, CONFIG.sale),
+getBalance(CONFIG.token, CONFIG.dead)
+]);
 const soldN = Number(sold), totalN = Number(total);
+const burnedN = Number(burnedTok) / TOKENS_PER_SHARE;
+const leftN = Number(inv) / TOKENS_PER_SHARE;
 $("soldShares").textContent = soldN.toLocaleString() + " 份";
+$("burnedShares").textContent = burnedN.toLocaleString() + " 份";
+$("leftShares").textContent = leftN.toLocaleString() + " 份";
 $("totalShares").textContent = totalN.toLocaleString() + " 份";
-$("leftShares").textContent = Math.max(totalN - soldN, 0).toLocaleString() + " 份";
-const pct = totalN > 0 ? (soldN / totalN * 100) : 0;
-$("barFill").style.width = pct.toFixed(2) + "%";
-$("barPct").textContent = "已售 " + pct.toFixed(2) + "%";
+const gonePct = totalN > 0 ? ((soldN + burnedN) / totalN * 100) : 0;
+const leftPct = totalN > 0 ? (leftN / totalN * 100) : 0;
+$("barFill").style.width = gonePct.toFixed(2) + "%";
+$("barPct").textContent = "剩余可售 " + leftPct.toFixed(2) + "%";
 } catch (e) {
 $("barPct").textContent = "进度加载失败";
 showMsg("读取打新进度失败：" + errText(e) + "\n请检查网络后刷新页面重试。", "err");
@@ -562,6 +575,7 @@ $("agentText").textContent =
 "1) 先对打新合约授权 USDT：USDT.approve(打新合约, 份数 × 1.2 × 1e18)\n" +
 "2) 再调用打新合约：buy(uint256 shares)，shares 为要购买的份数（1–10，含已购累计不超过 10）\n" +
 "3) 交易成功后 BNAQ 即时转入调用地址。\n" +
+"注：项目方已于 2026-11-02 销毁 58,000,000 BNAQ（转入销毁地址 0x000000000000000000000000000000000000dEaD），可售上限为 4,200 份；实际剩余份数 = 打新合约的 BNAQ 余额 / 10,000。\n" +
 "可先用 soldShares() / totalShares() 查看进度，用 sharesOf(address) 查看某地址已购份数。";
 }
 
