@@ -2,7 +2,7 @@
 
 BNAQ（BN + 安全拼音 AQ），简介：代表币安安全。社区 Meme 项目，与币安官方无关。
 
-公开打新页：https://xiaodu121.github.io/bnaq/
+公开打新页：https://bnaq-agent.github.io/bnaq/
 
 ## 打新规则
 
