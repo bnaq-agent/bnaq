@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BNAQ 打新 · 代表币安安全</title>
+<meta name="description" content="BNAQ 打新：BSC 链上 Agent ID 专属公开销售。总量 10,000 份，每份 1.2 USDT 得 10,000 BNAQ，每地址限购 10 份。代币合约 0x1ad6b1d49bf83d2660a528b124bb61634592dd7c，打新合约 0xaecdf0a06eccc7997c4f8114abaf7142f6c30f0c。">
+<meta property="og:title" content="BNAQ 打新 · 代表币安安全">
+<meta property="og:description" content="Agent ID 专属打新 · BSC · 1.2 USDT/份 · 每份 10,000 BNAQ · 限购 10 份">
+<meta property="og:type" content="website">
+<script type="application/json" id="bnaq-config">
+{
+  "project": "BNAQ",
+  "description": "代表币安安全 - community meme token subscription sale for Agent ID holders",
+  "chain": "BSC",
+  "chainId": 56,
+  "token": "0x1ad6b1d49bf83d2660a528b124bb61634592dd7c",
+  "sale": "0xaecdf0a06eccc7997c4f8114abaf7142f6c30f0c",
+  "usdt": "0x55d398326f99059fF775485246999027B3197955",
+  "pricePerShareUSDT": "1.2",
+  "tokensPerShare": 10000,
+  "totalShares": 10000,
+  "maxPerWallet": 10,
+  "gate": "SPACE ID Agent ID registry 0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F balanceOf(buyer) > 0",
+  "buyMethod": "approve USDT to sale, then sale.buy(uint256 shares)"
+}
+</script>
+<style>
+:root{
+--gold:#f0b90b;
+--gold-dim:#c99400;
+--bg:#0b0e11;
+--panel:#161a1e;
+--panel2:#1e242b;
+--line:#2b3138;
+--text:#eaecef;
+--muted:#848e9c;
+--red:#f6465d;
+--green:#0ecb81;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+background:var(--bg);
+color:var(--text);
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+min-height:100vh;
+padding:20px 14px 48px;
+}
+.wrap{max-width:560px;margin:0 auto}
+header{text-align:center;padding:26px 0 8px}
+.logo{
+font-size:52px;font-weight:800;letter-spacing:3px;color:var(--gold);
+text-shadow:0 0 26px rgba(240,185,11,.35);
+}
+.slogan{font-size:19px;margin-top:6px;color:var(--text)}
+.sub{font-size:13px;color:var(--muted);margin-top:6px}
+.card{
+background:var(--panel);
+border:1px solid var(--line);
+border-radius:14px;
+padding:18px;
+margin-top:16px;
+}
+.card h2{font-size:15px;color:var(--gold);margin-bottom:12px;letter-spacing:1px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:14px}
+.row .k{color:var(--muted)}
+.row .v{font-weight:600;font-variant-numeric:tabular-nums}
+.bar{
+height:14px;background:var(--panel2);border-radius:7px;overflow:hidden;margin:10px 0 4px;
+border:1px solid var(--line);
+}
+.bar > div{
+height:100%;width:0%;
+background:linear-gradient(90deg,var(--gold-dim),var(--gold));
+transition:width .6s ease;
+}
+.pct{text-align:right;font-size:12px;color:var(--muted)}
+button{
+width:100%;padding:13px;border:none;border-radius:10px;
+font-size:16px;font-weight:700;cursor:pointer;
+background:var(--gold);color:#181a20;
+transition:opacity .2s, transform .1s;
+}
+button:active{transform:scale(.99)}
+button:disabled{background:#3a3f46;color:#888;cursor:not-allowed}
+button.secondary{background:var(--panel2);color:var(--gold);border:1px solid var(--gold-dim)}
+.btnrow{display:flex;gap:10px}
+.btnrow button{flex:1}
+.selector{display:flex;align-items:center;justify-content:center;gap:18px;margin:8px 0 4px}
+.selector button{
+width:46px;height:46px;border-radius:50%;font-size:22px;padding:0;flex:none;
+}
+.selector .num{font-size:34px;font-weight:800;min-width:64px;text-align:center;color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+.addr{
+display:flex;align-items:center;gap:8px;background:var(--panel2);
+border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-top:8px;
+}
+.addr .label{font-size:12px;color:var(--muted);white-space:nowrap}
+.addr .val{
+flex:1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
+word-break:break-all;color:var(--text);
+}
+.addr button{width:auto;padding:6px 12px;font-size:13px;flex:none}
+pre{
+background:#0d1114;border:1px solid var(--line);border-radius:8px;
+padding:12px;font-size:12px;line-height:1.7;color:#c9d1d9;
+white-space:pre-wrap;word-break:break-all;margin-top:8px;
+font-family:ui-monospace,Menlo,Consolas,monospace;
+}
+#msg{
+display:none;margin-top:16px;padding:12px 14px;border-radius:10px;font-size:14px;line-height:1.6;
+word-break:break-all;white-space:pre-wrap;
+}
+#msg.err{display:block;background:rgba(246,70,93,.12);border:1px solid var(--red);color:#ff8fa0}
+#msg.ok{display:block;background:rgba(14,203,129,.10);border:1px solid var(--green);color:#5eeab8}
+#msg.info{display:block;background:rgba(240,185,11,.10);border:1px solid var(--gold-dim);color:var(--gold)}
+.disclaimer{
+margin-top:22px;text-align:center;font-size:12px;color:var(--muted);line-height:1.8;
+}
+.hidden{display:none!important}
+.wallet-addr{font-size:12px;color:var(--muted);text-align:center;margin-top:8px;word-break:break-all}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+<div class="logo">BNAQ</div>
+<div class="slogan">代表币安安全</div>
+<div class="sub">Agent ID 专属打新 · BSC 链上公开销售</div>
+</header>
+
+<div class="card">
+<h2>打新进度</h2>
+<div class="bar"><div id="barFill"></div></div>
+<div class="pct" id="barPct">加载中…</div>
+<div class="row"><span class="k">已售份数</span><span class="v" id="soldShares">—</span></div>
+<div class="row"><span class="k">总量</span><span class="v" id="totalShares">—</span></div>
+<div class="row"><span class="k">剩余份数</span><span class="v" id="leftShares">—</span></div>
+<div class="row"><span class="k">单价</span><span class="v">1.2 USDT / 份</span></div>
+<div class="row"><span class="k">每份可得</span><span class="v">10,000 BNAQ</span></div>
+<div class="row"><span class="k">每人限购</span><span class="v">10 份</span></div>
+<div class="row"><span class="k">参与门槛</span><span class="v">须持有 Agent ID</span></div>
+</div>
+
+<div class="card">
+<h2>参与打新</h2>
+<button id="btnConnect">连接钱包</button>
+<div class="wallet-addr hidden" id="walletAddr"></div>
+
+<div id="myPanel" class="hidden">
+<div class="row"><span class="k">我的已购份数</span><span class="v" id="myShares">—</span></div>
+<div class="row"><span class="k">我的 BNAQ 余额</span><span class="v" id="myBnaq">—</span></div>
+<div class="row"><span class="k">我的 USDT 余额</span><span class="v" id="myUsdt">—</span></div>
+<div class="row"><span class="k">USDT 已授权额度</span><span class="v" id="myAllowance">—</span></div>
+
+<div class="selector">
+<button id="btnMinus" class="secondary">−</button>
+<div class="num" id="selNum">1</div>
+<button id="btnPlus" class="secondary">+</button>
+</div>
+<div class="hint" id="selHint">选择份数（每份 1.2 USDT）</div>
+<div class="hint" id="costHint"></div>
+
+<div style="height:12px"></div>
+<div class="btnrow">
+<button id="btnApprove" class="secondary hidden">授权 USDT</button>
+<button id="btnBuy" disabled>立即打新</button>
+</div>
+</div>
+</div>
+
+<div id="msg"></div>
+
+<div class="card">
+<h2>合约地址（BSC 主网）</h2>
+<div class="addr">
+<span class="label">代币合约</span>
+<span class="val" id="addrToken">0x1ad6b1d49bf83d2660a528b124bb61634592dd7c</span>
+<button class="secondary" data-copy="addrToken">复制</button>
+</div>
+<div class="addr">
+<span class="label">打新合约</span>
+<span class="val" id="addrSale">0xaecdf0a06eccc7997c4f8114abaf7142f6c30f0c</span>
+<button class="secondary" data-copy="addrSale">复制</button>
+</div>
+<div class="addr">
+<span class="label">USDT</span>
+<span class="val" id="addrUsdt">0x55d398326f99059fF775485246999027B3197955</span>
+<button class="secondary" data-copy="addrUsdt">复制</button>
+</div>
+</div>
+
+<div class="card">
+<h2>AI Agent 调用说明</h2>
+<pre id="agentText">项目：BNAQ 打新（BSC 主网，chainId 56）
+代币合约（BNAQ）：0x1ad6b1d49bf83d2660a528b124bb61634592dd7c
+打新合约：0xaecdf0a06eccc7997c4f8114abaf7142f6c30f0c
+付款币种 USDT：0x55d398326f99059fF775485246999027B3197955（18 位小数）
+价格：1.2 USDT / 份；每份得 10,000 BNAQ；总量 10,000 份；每地址限购 10 份。
+门槛：调用地址须持有 Agent ID（SPACE ID Agent ID 注册表 balanceOf &gt; 0），否则 buy 会被合约拒绝。
+步骤：
+1) 先对打新合约授权 USDT：USDT.approve(打新合约, 份数 × 1.2 × 1e18)
+2) 再调用打新合约：buy(uint256 shares)，shares 为要购买的份数（1–10，含已购累计不超过 10）
+3) 交易成功后 BNAQ 即时转入调用地址。
+可先用 soldShares() / totalShares() 查看进度，用 sharesOf(address) 查看某地址已购份数。</pre>
+</div>
+
+<div class="disclaimer">
+BNAQ 为社区 Meme 项目，与币安官方无关。<br>
+链上交易不可撤销，打新前请自行确认合约地址与风险。
+</div>
+
+</div>
+
+<script>
+"use strict";
+
+/* ============ 配置 ============ */
+const CONFIG = {
+token: "0x1ad6b1d49bf83d2660a528b124bb61634592dd7c",
+sale: "0xaecdf0a06eccc7997c4f8114abaf7142f6c30f0c",
+usdt: "0x55d398326f99059fF775485246999027B3197955",
+chainId: 56,
+rpcs: [
+"https://bsc-dataseed.binance.org",
+"https://bsc.publicnode.com",
+"https://bsc-rpc.publicnode.com",
+"https://binance.llamarpc.com"
+]
+};
+
+const PRICE_PER_SHARE = 1.2;      // USDT / 份
+const TOKENS_PER_SHARE = 10000;   // BNAQ / 份
+const MAX_PER_WALLET = 10;        // 每人限购份数
+
+/* 函数选择器（keccak 前 4 字节，部署时已核对） */
+const SEL = {
+soldShares: "0x67153ab4",
+totalShares: "0x3a98ef39",
+sharesOf: "0xf5eb42dc",
+balanceOf: "0x70a08231",
+allowance: "0xdd62ed3e",
+approve: "0x095ea7b3",
+buy: "0xd96a094a"
+};
+
+/* ============ 基础工具（零依赖） ============ */
+const $ = id => document.getElementById(id);
+const encAddr = a => "000000000000000000000000" + a.replace(/^0x/, "").toLowerCase();
+const encUint = v => BigInt(v).toString(16).padStart(64, "0");
+const priceWei = shares => BigInt(shares) * 12n * (10n ** 17n); // shares * 1.2 * 1e18
+
+function fmtUnits(v, decimals) {
+v = BigInt(v);
+const neg = v < 0n; if (neg) v = -v;
+const base = 10n ** BigInt(decimals);
+let s = (v / base).toString();
+const frac = (v % base).toString().padStart(decimals, "0").slice(0, 4).replace(/0+$/, "");
+if (frac) s += "." + frac;
+return (neg ? "-" : "") + s;
+}
+function showMsg(text, kind) {
+const m = $("msg");
+m.textContent = text;
+m.className = kind || "info";
+}
+function clearMsg(){ const m = $("msg"); m.textContent = ""; m.className = ""; }
+function errText(e) {
+if (!e) return "未知错误";
+return (e.message || String(e)).toString();
+}
+
+/* ============ JSON-RPC 只读调用（多节点自动切换） ============ */
+async function rpcRequest(method, params) {
+let lastErr = null;
+for (const url of CONFIG.rpcs) {
+try {
+const resp = await fetch(url, {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params })
+});
+if (!resp.ok) throw new Error("HTTP " + resp.status);
+const j = await resp.json();
+if (j.error) throw new Error(j.error.message || "RPC error");
+return j.result;
+} catch (e) { lastErr = e; }
+}
+throw lastErr || new Error("所有 RPC 节点均不可用");
+}
+async function ethCall(to, data) {
+const r = await rpcRequest("eth_call", [{ to, data }, "latest"]);
+return BigInt(r);
+}
+const getSoldShares  = () => ethCall(CONFIG.sale, SEL.soldShares);
+const getTotalShares = () => ethCall(CONFIG.sale, SEL.totalShares);
+const getSharesOf    = a  => ethCall(CONFIG.sale, SEL.sharesOf + encAddr(a));
+const getBalance     = (token, a) => ethCall(token, SEL.balanceOf + encAddr(a));
+const getAllowance   = a  => ethCall(CONFIG.usdt, SEL.allowance + encAddr(a) + encAddr(CONFIG.sale));
+
+async function waitReceipt(hash) {
+for (let i = 0; i < 40; i++) {
+try {
+const r = await rpcRequest("eth_getTransactionReceipt", [hash]);
+if (r) {
+if (r.status === "0x1") return true;
+throw new Error("交易上链但执行失败（status 0）");
+}
+} catch (e) {
+if (e && /执行失败/.test(e.message)) throw e;
+}
+await new Promise(res => setTimeout(res, 3000));
+}
+throw new Error("等待交易确认超时，可到 BscScan 用交易哈希查询结果");
+}
+
+/* ============ 状态 ============ */
+let account = null;
+let mySharesCount = 0;
+let sel = 1;
+
+/* ============ 只读进度 ============ */
+async function loadProgress() {
+try {
+const [sold, total] = await Promise.all([getSoldShares(), getTotalShares()]);
+const soldN = Number(sold), totalN = Number(total);
+$("soldShares").textContent = soldN.toLocaleString() + " 份";
+$("totalShares").textContent = totalN.toLocaleString() + " 份";
+$("leftShares").textContent = Math.max(totalN - soldN, 0).toLocaleString() + " 份";
+const pct = totalN > 0 ? (soldN / totalN * 100) : 0;
+$("barFill").style.width = pct.toFixed(2) + "%";
+$("barPct").textContent = "已售 " + pct.toFixed(2) + "%";
+} catch (e) {
+$("barPct").textContent = "进度加载失败";
+showMsg("读取打新进度失败：" + errText(e) + "\n请检查网络后刷新页面重试。", "err");
+}
+}
+
+/* ============ 我的数据 ============ */
+function maxSelectable() {
+return Math.max(MAX_PER_WALLET - mySharesCount, 0);
+}
+function renderSelector() {
+const max = maxSelectable();
+if (max <= 0) {
+sel = 0;
+$("selNum").textContent = "0";
+$("selHint").textContent = "你已达到限购上限（10 份）";
+$("costHint").textContent = "";
+$("btnBuy").disabled = true;
+$("btnApprove").classList.add("hidden");
+return;
+}
+if (sel < 1) sel = 1;
+if (sel > max) sel = max;
+$("selNum").textContent = sel;
+$("selHint").textContent = "选择份数（每份 1.2 USDT，还可购 " + max + " 份）";
+$("costHint").textContent = "需支付 " + (sel * PRICE_PER_SHARE).toFixed(1) + " USDT · 可得 " +
+(sel * TOKENS_PER_SHARE).toLocaleString() + " BNAQ";
+}
+
+async function refreshMine() {
+if (!account) return;
+try {
+const [sh, bnaq, usdtBal, allow] = await Promise.all([
+getSharesOf(account),
+getBalance(CONFIG.token, account),
+getBalance(CONFIG.usdt, account),
+getAllowance(account)
+]);
+mySharesCount = Number(sh);
+$("myShares").textContent = mySharesCount + " 份";
+$("myBnaq").textContent = fmtUnits(bnaq, 18) + " BNAQ";
+$("myUsdt").textContent = fmtUnits(usdtBal, 18) + " USDT";
+$("myAllowance").textContent = fmtUnits(allow, 18) + " USDT";
+
+renderSelector();
+const need = sel > 0 ? priceWei(sel) : 0n;
+if (sel > 0 && allow < need) {
+$("btnApprove").classList.remove("hidden");
+$("btnBuy").disabled = true;
+} else {
+$("btnApprove").classList.add("hidden");
+$("btnBuy").disabled = sel <= 0;
+}
+} catch (e) {
+showMsg("读取账户数据失败：" + errText(e), "err");
+}
+}
+
+/* ============ 钱包发送交易 ============ */
+async function sendTx(to, data) {
+const hash = await window.ethereum.request({
+method: "eth_sendTransaction",
+params: [{ from: account, to, data, value: "0x0" }]
+});
+return hash;
+}
+
+/* ============ 连接钱包 ============ */
+async function connect() {
+clearMsg();
+try {
+if (!window.ethereum) {
+showMsg("未检测到钱包。请在币安钱包 / MetaMask 等支持 BSC 的钱包浏览器中打开本页（普通浏览器或文件预览无法连接钱包，但可正常查看进度）。", "err");
+return;
+}
+const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+if (!accounts || !accounts.length) throw new Error("钱包未返回账户");
+account = accounts[0];
+
+const chainIdHex = await window.ethereum.request({ method: "eth_chainId" });
+if (parseInt(chainIdHex, 16) !== CONFIG.chainId) {
+try {
+await window.ethereum.request({
+method: "wallet_switchEthereumChain",
+params: [{ chainId: "0x" + CONFIG.chainId.toString(16) }]
+});
+} catch (swErr) {
+if (swErr && swErr.code === 4902) {
+await window.ethereum.request({
+method: "wallet_addEthereumChain",
+params: [{
+chainId: "0x" + CONFIG.chainId.toString(16),
+chainName: "BNB Smart Chain",
+nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
+rpcUrls: [CONFIG.rpcs[0]],
+blockExplorerUrls: ["https://bscscan.com"]
+}]
+});
+} else { throw swErr; }
+}
+}
+
+$("btnConnect").textContent = "钱包已连接";
+$("btnConnect").disabled = true;
+$("walletAddr").textContent = account;
+$("walletAddr").classList.remove("hidden");
+$("myPanel").classList.remove("hidden");
+
+await refreshMine();
+showMsg("钱包连接成功。打新须持有 Agent ID，未持有将无法通过合约校验。", "ok");
+} catch (e) {
+showMsg("连接钱包失败：" + errText(e), "err");
+}
+}
+
+/* ============ 授权 ============ */
+async function doApprove() {
+clearMsg();
+try {
+const need = priceWei(sel);
+$("btnApprove").disabled = true;
+$("btnApprove").textContent = "授权中…";
+const hash = await sendTx(CONFIG.usdt, SEL.approve + encAddr(CONFIG.sale) + encUint(need));
+showMsg("授权交易已发送，等待上链确认…\nTx: " + hash, "info");
+await waitReceipt(hash);
+showMsg("USDT 授权成功，可以打新了。", "ok");
+await refreshMine();
+} catch (e) {
+showMsg("授权失败：" + errText(e), "err");
+} finally {
+$("btnApprove").disabled = false;
+$("btnApprove").textContent = "授权 USDT";
+}
+}
+
+/* ============ 打新 ============ */
+async function doBuy() {
+clearMsg();
+try {
+if (sel <= 0) { showMsg("请选择份数。", "err"); return; }
+$("btnBuy").disabled = true;
+$("btnBuy").textContent = "打新中…";
+const hash = await sendTx(CONFIG.sale, SEL.buy + encUint(BigInt(sel)));
+showMsg("打新交易已发送，等待上链确认…\nTx: " + hash, "info");
+await waitReceipt(hash);
+showMsg("打新成功！已购 " + sel + " 份，" + (sel * TOKENS_PER_SHARE).toLocaleString() + " BNAQ 已发送到你的钱包。", "ok");
+await Promise.all([refreshMine(), loadProgress()]);
+} catch (e) {
+showMsg("打新失败：" + errText(e) + "\n（常见原因：未持有 Agent ID、USDT 余额或授权不足、已达限购上限、已售罄）", "err");
+} finally {
+$("btnBuy").textContent = "立即打新";
+if (account) refreshMine();
+}
+}
+
+/* ============ 页面初始化 ============ */
+function fillStatic() {
+$("addrToken").textContent = CONFIG.token;
+$("addrSale").textContent = CONFIG.sale;
+$("addrUsdt").textContent = CONFIG.usdt;
+$("agentText").textContent =
+"项目：BNAQ 打新（BSC 主网，chainId 56）\n" +
+"代币合约（BNAQ）：" + CONFIG.token + "\n" +
+"打新合约：" + CONFIG.sale + "\n" +
+"付款币种 USDT：" + CONFIG.usdt + "（18 位小数）\n" +
+"价格：1.2 USDT / 份；每份得 10,000 BNAQ；总量 10,000 份；每地址限购 10 份。\n" +
+"门槛：调用地址须持有 Agent ID（SPACE ID Agent ID 注册表 balanceOf > 0），否则 buy 会被合约拒绝。\n" +
+"步骤：\n" +
+"1) 先对打新合约授权 USDT：USDT.approve(打新合约, 份数 × 1.2 × 1e18)\n" +
+"2) 再调用打新合约：buy(uint256 shares)，shares 为要购买的份数（1–10，含已购累计不超过 10）\n" +
+"3) 交易成功后 BNAQ 即时转入调用地址。\n" +
+"可先用 soldShares() / totalShares() 查看进度，用 sharesOf(address) 查看某地址已购份数。";
+}
+
+document.querySelectorAll("[data-copy]").forEach(btn => {
+btn.addEventListener("click", async () => {
+const el = $(btn.getAttribute("data-copy"));
+const text = el.textContent.trim();
+if (!text || text === "—") { showMsg("暂无可复制内容。", "info"); return; }
+try {
+await navigator.clipboard.writeText(text);
+showMsg("已复制：" + text, "ok");
+} catch (e) {
+showMsg("复制失败，请长按/手动复制。", "err");
+}
+});
+});
+
+$("btnConnect").addEventListener("click", connect);
+$("btnApprove").addEventListener("click", doApprove);
+$("btnBuy").addEventListener("click", doBuy);
+$("btnMinus").addEventListener("click", () => { if (sel > 1) { sel--; renderSelector(); if (account) refreshMine(); } });
+$("btnPlus").addEventListener("click", () => { if (sel < maxSelectable()) { sel++; renderSelector(); if (account) refreshMine(); } });
+
+if (window.ethereum && window.ethereum.on) {
+window.ethereum.on("accountsChanged", () => location.reload());
+window.ethereum.on("chainChanged", () => location.reload());
+}
+
+fillStatic();
+loadProgress();
+</script>
+</body>
+</html>
