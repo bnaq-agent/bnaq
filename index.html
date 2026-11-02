@@ -160,7 +160,6 @@ font-family:var(--mono);
 <h2>销售进度<span class="note">链上实时数据，每次打开页面自动读取</span></h2>
 <div class="bar"><div id="barFill"></div></div>
 <div class="pct" id="barPct">加载中…</div>
-<div class="row"><span class="k">已售份数</span><span class="v" id="soldShares">—</span></div>
 <div class="row"><span class="k">剩余可售</span><span class="v" id="leftShares">—</span></div>
 <div class="row"><span class="k">总量</span><span class="v" id="totalShares">—</span></div>
 <div class="row"><span class="k">单价</span><span class="v">1.2 USDT / 份</span></div>
@@ -389,7 +388,6 @@ getBalance(CONFIG.token, CONFIG.sale)
 ]);
 const soldN = Number(sold), totalN = Number(total);
 const leftN = Number(inv / (10n ** 18n) / BigInt(TOKENS_PER_SHARE));
-$("soldShares").textContent = soldN.toLocaleString() + " 份";
 $("leftShares").textContent = leftN.toLocaleString() + " 份";
 $("totalShares").textContent = totalN.toLocaleString() + " 份";
 const leftPct = totalN > 0 ? (leftN / totalN * 100) : 0;
