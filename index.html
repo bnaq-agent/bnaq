@@ -394,8 +394,8 @@ getBalance(CONFIG.token, CONFIG.sale),
 getBalance(CONFIG.token, CONFIG.dead)
 ]);
 const soldN = Number(sold), totalN = Number(total);
-const burnedN = Number(burnedTok) / TOKENS_PER_SHARE;
-const leftN = Number(inv) / TOKENS_PER_SHARE;
+const burnedN = Number(burnedTok / (10n ** 18n) / BigInt(TOKENS_PER_SHARE));
+const leftN = Number(inv / (10n ** 18n) / BigInt(TOKENS_PER_SHARE));
 $("soldShares").textContent = soldN.toLocaleString() + " 份";
 $("burnedShares").textContent = burnedN.toLocaleString() + " 份";
 $("leftShares").textContent = leftN.toLocaleString() + " 份";
